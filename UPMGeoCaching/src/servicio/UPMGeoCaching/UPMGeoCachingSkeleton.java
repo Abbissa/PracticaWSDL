@@ -24,18 +24,20 @@ import es.upm.fi.sos.LoginResponse;
  */
 public class UPMGeoCachingSkeleton {
 
-        boolean logged;
-        String username;
-        String admin;
-        String adminPWD;
+        private boolean logged;
+        private String username;
+        static String admin=null;
+        static String adminPWD=null;
         UPMAuthenticationAuthorizationWSSkeletonStub cs;
 
         public UPMGeoCachingSkeleton() {
 
                 logged = false;
                 username = null;
-                admin = "ADMIN";
-                adminPWD = "ADMIN";
+                if (admin != null)
+                        admin = "ADMIN";
+                if (adminPWD != null)
+                        adminPWD = "ADMIN";
                 try {
                         cs = new UPMAuthenticationAuthorizationWSSkeletonStub();
                 } catch (AxisFault e) {
@@ -44,6 +46,7 @@ public class UPMGeoCachingSkeleton {
                 }
 
         }
+
         /**
          * Auto generated method signature
          * 
@@ -203,8 +206,8 @@ public class UPMGeoCachingSkeleton {
                 } catch (RemoteException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
-
-                        return null;
+                        response.get_return().setResponse(false);
+                        return response;
                 }
         }
 
