@@ -8,6 +8,9 @@
 package servicio.UPMGeoCaching;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.apache.axis2.AxisFault;
 
@@ -17,6 +20,8 @@ import cliente.UpmAuthenticationAuthorization.UPMAuthenticationAuthorizationWSSk
 import cliente.UpmAuthenticationAuthorization.UPMAuthenticationAuthorizationWSSkeletonStub.LoginBackEnd;
 import cliente.UpmAuthenticationAuthorization.UPMAuthenticationAuthorizationWSSkeletonStub.UserBackEnd;
 import es.upm.fi.sos.AddUserResponse;
+import es.upm.fi.sos.CreateTreasureResponse;
+import es.upm.fi.sos.FindTreasureResponse;
 import es.upm.fi.sos.LoginResponse;
 
 /**
@@ -26,18 +31,23 @@ public class UPMGeoCachingSkeleton {
 
         private boolean logged;
         private String username;
-        static String admin=null;
-        static String adminPWD=null;
+        static String admin = null;
+        static String adminPWD = null;
         UPMAuthenticationAuthorizationWSSkeletonStub cs;
+
+        private static HashMap<String, User> users;
+        private static HashMap<String, Tesoro> treasures;
 
         public UPMGeoCachingSkeleton() {
 
                 logged = false;
                 username = null;
                 if (admin != null)
-                        admin = "ADMIN";
+                        admin = "admin";
                 if (adminPWD != null)
-                        adminPWD = "ADMIN";
+                        adminPWD = "admin";
+                if (users != null)
+                        users = new HashMap<String, User>();
                 try {
                         cs = new UPMAuthenticationAuthorizationWSSkeletonStub();
                 } catch (AxisFault e) {
@@ -154,9 +164,33 @@ public class UPMGeoCachingSkeleton {
 
         public es.upm.fi.sos.CreateTreasureResponse createTreasure(
                         es.upm.fi.sos.CreateTreasure createTreasure) {
-                // TODO : fill this with the necessary business logic
-                throw new java.lang.UnsupportedOperationException(
-                                "Please implement " + this.getClass().getName() + "#createTreasure");
+
+                CreateTreasureResponse response = new CreateTreasureResponse();
+                if (!logged) {
+
+                        response.get_return().setResponse(false);
+                        return response;
+                }
+                response.get_return().setResponse(true);
+                String name = createTreasure.getArgs0().getName();
+                double altitude = createTreasure.getArgs0().getAltitude();
+                double latitude = createTreasure.getArgs0().getLatitude();
+
+                if (treasures.containsKey(name)) {
+
+                        Tesoro t = treasures.get(name);
+
+                        t.altitude = altitude;
+                        t.latitude = latitude;
+                        return response;
+                }
+
+                Tesoro t = new Tesoro(name, altitude, latitude);
+
+                treasures.put(name, t);
+                users.get(username).treasuresCreated.add(t);
+
+                return response;
         }
 
         /**
@@ -168,9 +202,24 @@ public class UPMGeoCachingSkeleton {
 
         public es.upm.fi.sos.FindTreasureResponse findTreasure(
                         es.upm.fi.sos.FindTreasure findTreasure) {
-                // TODO : fill this with the necessary business logic
-                throw new java.lang.UnsupportedOperationException(
-                                "Please implement " + this.getClass().getName() + "#findTreasure");
+                FindTreasureResponse response = new FindTreasureResponse();
+                String name = findTreasure.getArgs0().getName();
+                if (!logged || !treasures.containsKey(name)) {
+
+                        response.get_return().setResponse(false);
+
+                        return response;
+                }
+
+                Tesoro t = treasures.get(name);
+                if (!t.foundBy.contains(username)) {
+                        users.get(username).treasuresFound.add(t);
+                        t.foundBy.add(username);
+                }
+                response.get_return().setResponse(true);
+
+                return response;
+
         }
 
         /**
@@ -189,18 +238,28 @@ public class UPMGeoCachingSkeleton {
                         return response;
                 }
 
-                AddUser user = new AddUser();
+                AddUser addUserStub = new AddUser();
 
                 UserBackEnd tmp = new UserBackEnd();
                 tmp.setName(addUser.getArgs0().getUsername());
-                user.setUser(tmp);
+                addUserStub.setUser(tmp);
 
                 try {
                         cliente.UpmAuthenticationAuthorization.UPMAuthenticationAuthorizationWSSkeletonStub.AddUserResponse csResponse = cs
-                                        .addUser(user);
-                        response.get_return().setPwd(csResponse.get_return().getPassword());
-                        response.get_return().setResponse(true);
+                                        .addUser(addUserStub);
+                        if (csResponse.get_return().getResult()) {
 
+                                String name = addUser.getArgs0().getUsername();
+                                String password = csResponse.get_return().getPassword();
+
+                                response.get_return().setPwd(password);
+                                response.get_return().setResponse(true);
+
+                                User user = new User(name,
+                                                password);
+                                users.put(name, user);
+                        } else
+                                response.get_return().setResponse(false);
                         return response;
 
                 } catch (RemoteException e) {
@@ -289,4 +348,45 @@ public class UPMGeoCachingSkeleton {
                         return null;
                 }
         }
+        
+        
+        
+        public static class User {
+
+            String username;
+            String password;
+
+            HashMap<String, User> followed;
+
+            ArrayList<Tesoro> treasuresCreated;
+            ArrayList<Tesoro> treasuresFound;
+
+            public User(String username, String password) {
+
+                    this.username = username;
+                    this.password = password;
+                    this.treasuresCreated = new ArrayList<Tesoro>();
+                    this.treasuresFound = new ArrayList<Tesoro>();
+                    this.followed = new HashMap<String, User>();
+            }
+    }
+
+    public static class Tesoro {
+
+            String nombre;
+            double latitude;
+            double altitude;
+
+            HashSet<String> foundBy;
+
+            public Tesoro(String nombre, double latitude, double altitude) {
+
+                    this.nombre = nombre;
+                    this.latitude = latitude;
+                    this.altitude = altitude;
+                    this.foundBy = new HashSet<String>();
+            }
+    }
 }
+
+
