@@ -23,6 +23,7 @@ import cliente.UpmAuthenticationAuthorization.UPMAuthenticationAuthorizationWSSk
 import cliente.UpmAuthenticationAuthorization.UPMAuthenticationAuthorizationWSSkeletonStub.UserBackEnd;
 import es.upm.fi.sos.model.xsd.PasswordPair;
 import es.upm.fi.sos.model.xsd.Response;
+import es.upm.fi.sos.model.xsd.Treasure;
 
 /**
  * UPMGeoCachingSkeleton java skeleton for the axisService
@@ -66,7 +67,7 @@ public class UPMGeoCachingSkeleton {
 	 * @return
 	 */
 	public void logout(es.upm.fi.sos.Logout logout) {
-		if(username != null && users.containsKey(username)) {
+		if (username != null && users.containsKey(username)) {
 			// Decrementar numero de sesiones de username
 			nsesiones--;
 			// Si el numero de sesiones es 0, poner username a null
@@ -87,9 +88,22 @@ public class UPMGeoCachingSkeleton {
 	 */
 	public es.upm.fi.sos.RemoveFollowerResponse removeFollower(
 			es.upm.fi.sos.RemoveFollower removeFollower) {
-		// TODO : fill this with the necessary business logic
-		throw new java.lang.UnsupportedOperationException("Please implement "
-				+ this.getClass().getName() + "#removeFollower");
+
+		RemoveFollowerResponse response = new RemoveFollowerResponse();
+		if (!logged) {
+			response.get_return().setResponse(false);
+			return response;
+		}
+		String remUser = removeFollower.getArgs0().getUsername();
+		if (!users.get(username).followed.containsKey(remUser)) {
+			response.get_return().setResponse(false);
+			return response;
+
+		}
+		users.get(username).followed.remove(remUser);
+		response.get_return().setResponse(true);
+
+		return response;
 	}
 
 	/**
@@ -101,9 +115,33 @@ public class UPMGeoCachingSkeleton {
 
 	public es.upm.fi.sos.GetMyTreasuresFoundResponse getMyTreasuresFound(
 			es.upm.fi.sos.GetMyTreasuresFound getMyTreasuresFound) {
-		// TODO : fill this with the necessary business logic
-		throw new java.lang.UnsupportedOperationException("Please implement "
-				+ this.getClass().getName() + "#getMyTreasuresFound");
+
+		GetMyTreasuresFoundResponse response = new GetMyTreasuresFoundResponse();
+
+		if (!logged) {
+			response.get_return().setResult(false);
+		}
+		response.get_return().setResult(true);
+
+		User user = users.get(username);
+
+		int size = user.treasuresFound.size();
+
+		double[] alts = new double[size];
+		double[] lats = new double[size];
+		String[] names = new String[size];
+		int i = 0;
+		for (Tesoro treasure : user.treasuresFound) {
+
+			alts[i] = treasure.altitude;
+			lats[i] = treasure.latitude;
+			names[i] = treasure.nombre;
+
+		}
+		response.get_return().setAlts(alts);
+		response.get_return().setLats(lats);
+		response.get_return().setNames(names);
+		return response;
 	}
 
 	/**
@@ -130,8 +168,33 @@ public class UPMGeoCachingSkeleton {
 	public es.upm.fi.sos.GetMyTreasuresCreatedResponse getMyTreasuresCreated(
 			es.upm.fi.sos.GetMyTreasuresCreated getMyTreasuresCreated) {
 		// TODO : fill this with the necessary business logic
-		throw new java.lang.UnsupportedOperationException("Please implement "
-				+ this.getClass().getName() + "#getMyTreasuresCreated");
+
+		GetMyTreasuresCreatedResponse response = new GetMyTreasuresCreatedResponse();
+
+		if (!logged) {
+			response.get_return().setResult(false);
+		}
+		response.get_return().setResult(true);
+
+		User user = users.get(username);
+
+		int size = user.treasuresCreated.size();
+
+		double[] alts = new double[size];
+		double[] lats = new double[size];
+		String[] names = new String[size];
+		int i = 0;
+		for (Tesoro treasure : user.treasuresCreated) {
+
+			alts[i] = treasure.altitude;
+			lats[i] = treasure.latitude;
+			names[i] = treasure.nombre;
+
+		}
+		response.get_return().setAlts(alts);
+		response.get_return().setLats(lats);
+		response.get_return().setNames(names);
+		return response;
 	}
 
 	/**
@@ -299,28 +362,29 @@ public class UPMGeoCachingSkeleton {
 
 	public es.upm.fi.sos.ChangePasswordResponse changePassword(
 			es.upm.fi.sos.ChangePassword changePassword) {
-		
+
 		PasswordPair passwords = changePassword.getArgs0();
 		String vieja = passwords.getOldpwd();
 		String nueva = passwords.getNewpwd();
 		ChangePasswordResponse cpresponse = new ChangePasswordResponse();
 		Response response = new Response();
-		
+
 		// Comprobar usuario actual
 		if (!logged) {
 			response.setResponse(false);
 			cpresponse.set_return(response);
 			return cpresponse;
 		}
-		
+
 		// Comprobar que contrasenya antigua = actual
 		if (!vieja.equals(users.get(username))) {
 			response.setResponse(false);
 			cpresponse.set_return(response);
 			return cpresponse;
 		}
-		
-		// Si se quiere cambiar la de admin, primero comprobar que es el y que antigua es correcta
+
+		// Si se quiere cambiar la de admin, primero comprobar que es el y que antigua
+		// es correcta
 		if (username.equals(admin) && username != null) {
 			if (vieja.equals(adminPWD)) {
 				adminPWD = nueva;
@@ -330,14 +394,14 @@ public class UPMGeoCachingSkeleton {
 				cpresponse.set_return(response);
 				return cpresponse;
 			}
-			
+
 			else {
 				response.setResponse(false);
 				cpresponse.set_return(response);
 				return cpresponse;
 			}
 		}
-		
+
 		ChangePasswordBackEnd cpbackend = new ChangePasswordBackEnd();
 		ChangePasswordResponseE cpresponseE;
 		ChangePassword cpassword = new ChangePassword();
@@ -345,25 +409,26 @@ public class UPMGeoCachingSkeleton {
 		cpbackend.setOldpwd(vieja);
 		cpbackend.setNewpwd(nueva);
 		cpassword.setChangePassword(cpbackend);
-		
+
 		try {
-			
+
 			cpresponseE = cs.changePassword(cpassword);
-			cliente.UpmAuthenticationAuthorization.UPMAuthenticationAuthorizationWSSkeletonStub.ChangePasswordResponse cpr = cpresponseE.get_return();
-			
+			cliente.UpmAuthenticationAuthorization.UPMAuthenticationAuthorizationWSSkeletonStub.ChangePasswordResponse cpr = cpresponseE
+					.get_return();
+
 			if (cpr.getResult()) {
 				User usr = new User(username, nueva);
 				users.replace(username, usr);
 			}
-			
+
 			response.setResponse(cpr.getResult());
 			cpresponse.set_return(response);
 			return cpresponse;
-			
+
 		} catch (RemoteException e) {
 			response.setResponse(false);
 			cpresponse.set_return(response);
-			
+
 			e.printStackTrace();
 			System.out.println("Error al cambiar contrasenya.\n");
 			return cpresponse;
@@ -385,8 +450,7 @@ public class UPMGeoCachingSkeleton {
 			if (username.equals(login.getArgs0().getName())) {
 				nsesiones++;
 				response.get_return().setResponse(true);
-			}
-			else
+			} else
 				response.get_return().setResponse(false);
 			return response;
 		}
@@ -395,8 +459,7 @@ public class UPMGeoCachingSkeleton {
 			if (login.getArgs0().getPwd().equals(adminPWD)) {
 				nsesiones++;
 				response.get_return().setResponse(true);
-			}
-			else
+			} else
 				response.get_return().setResponse(false);
 
 			return response;
