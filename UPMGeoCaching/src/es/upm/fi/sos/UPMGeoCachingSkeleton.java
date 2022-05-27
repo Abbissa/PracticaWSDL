@@ -38,8 +38,8 @@ public class UPMGeoCachingSkeleton {
 	private boolean logged;
 	private String username;
 	private String password;
-	static String admin = null;
-	static String adminPWD = null;
+	static String admin = "admin";
+	static String adminPWD = "admin";
 	private int nsesiones = 0;
 	UPMAuthenticationAuthorizationWSSkeletonStub cs;
 
@@ -51,12 +51,18 @@ public class UPMGeoCachingSkeleton {
 		logged = false;
 		username = null;
 		password = null;
-		if (admin != null)
+		/*if (admin != null)
 			admin = "admin";
 		if (adminPWD != null)
 			adminPWD = "admin";
 		if (users != null)
+			users = new HashMap<String, User>();*/
+		if(users.equals(null))
 			users = new HashMap<String, User>();
+		if(treasures.equals(null))
+			treasures = new HashMap<String, Tesoro>();
+		if (!users.containsKey(admin))
+			users.put(admin, new User(admin, adminPWD));
 		try {
 			cs = new UPMAuthenticationAuthorizationWSSkeletonStub();
 			cs._getServiceClient().getOptions().setManageSession(true);
