@@ -59,6 +59,8 @@ public class UPMGeoCachingSkeleton {
 			users = new HashMap<String, User>();
 		try {
 			cs = new UPMAuthenticationAuthorizationWSSkeletonStub();
+			cs._getServiceClient().getOptions().setManageSession(true);
+			cs._getServiceClient().engageModule("addressing");
 		} catch (AxisFault e) {
 			System.out.println("Error de inicio de stub.\n");
 			e.printStackTrace();
