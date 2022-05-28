@@ -50,8 +50,8 @@ public class UPMGeoCachingSkeleton {
 
 		System.out.println("Crear clase");
 		logged = false;
-		username = null;
-		password = null;
+		username = "";
+		password = "";
 		/*if (admin != null)
 			admin = "admin";
 		if (adminPWD != null)
@@ -93,6 +93,7 @@ public class UPMGeoCachingSkeleton {
 				logged = false;
 			}
 		}
+		System.out.println("LOGOUT: nsesiones = " + nsesiones + "; logged = " + logged);
 	}
 
 	/**
@@ -104,20 +105,23 @@ public class UPMGeoCachingSkeleton {
 	public es.upm.fi.sos.RemoveFollowerResponse removeFollower(
 			es.upm.fi.sos.RemoveFollower removeFollower) {
 
+		System.out.println("REMOVEFOLLOWER 1");
 		RemoveFollowerResponse response = new RemoveFollowerResponse();
 		if (!logged) {
 			response.get_return().setResponse(false);
 			return response;
 		}
+		System.out.println("REMOVEFOLLOWER 2");
 		String remUser = removeFollower.getArgs0().getUsername();
 		if (!users.get(username).followed.containsKey(remUser)) {
 			response.get_return().setResponse(false);
 			return response;
 
 		}
+		System.out.println("REMOVEFOLLOWER 3 borrar followed: " + remUser);
 		users.get(username).followed.remove(remUser);
 		response.get_return().setResponse(true);
-
+		System.out.println("REMOVEFOLLOWER 4");
 		return response;
 	}
 
@@ -175,6 +179,7 @@ public class UPMGeoCachingSkeleton {
 
 		// Usuario no logeado falla
 		if (!logged) {
+			list.setResult(false);
 			gmfresponse.set_return(list);
 			return gmfresponse;
 		}
@@ -185,9 +190,13 @@ public class UPMGeoCachingSkeleton {
 			arrayFollows[n] = nombreFollow;
 			n++;
 		}
-
+		
+		list.setResult(true);
 		list.setFollowers(arrayFollows);
 		gmfresponse.set_return(list);
+		System.out.println("GETMYFOLLOWERS");
+		System.out.println("\t resultado = " + gmfresponse.get_return().getResult());
+		System.out.println("\t primer follower = " + gmfresponse.get_return().getFollowers()[0]);
 		return gmfresponse;
 
 	}
@@ -292,6 +301,10 @@ public class UPMGeoCachingSkeleton {
 			}
 			// 4. Borrar usuario de lista de usuarios
 			users.remove(usernameDelete);
+			int i = 0;
+			for (String nombre : users.keySet()) {
+				System.out.println("Nombre número " + i + " = " + nombre);
+			}
 			return removeRes;
 
 		} catch (RemoteException e) {
@@ -327,6 +340,8 @@ public class UPMGeoCachingSkeleton {
 		users.get(username).followed.put(followName, users.get(followName));
 		response.setResponse(true);
 		afresponse.set_return(response);
+		System.out.println("ADDFOLLOWER");
+		System.out.println("\t " + users.get(username).getFollowed().get(followName).getPassword());
 		return afresponse;
 	}
 
@@ -409,8 +424,9 @@ public class UPMGeoCachingSkeleton {
 		AddUserResponse response = new AddUserResponse();
 		es.upm.fi.sos.model.xsd.AddUserResponse param= new es.upm.fi.sos.model.xsd.AddUserResponse();
 		response.set_return(param);
+		System.out.println("ADDUSER: logged = " + logged + " ; username = " + username + " ; pwd = " + password);
 		if (!logged || username == null || !username.equals(admin)) {
-
+			System.out.println("AddUser1");
 			response.get_return().setResponse(false);
 			return response;
 		}
@@ -425,6 +441,7 @@ public class UPMGeoCachingSkeleton {
 			cliente.UpmAuthenticationAuthorization.UPMAuthenticationAuthorizationWSSkeletonStub.AddUserResponse csResponse = cs
 					.addUser(addUserStub);
 			System.out.println(csResponse.get_return().getResult());
+			System.out.println(addUserStub.getUser().getName());
 			if (csResponse.get_return().getResult()) {
 
 				String name = addUser.getArgs0().getUsername();
@@ -436,7 +453,7 @@ public class UPMGeoCachingSkeleton {
 				User user = new User(name, password);
 				users.put(name, user);
 			} else{
-				
+				System.out.println("AddUser2: getUsername = " + addUser.getArgs0().getUsername());
 				response.get_return().setResponse(false);
 			}
 			return response;
@@ -445,6 +462,7 @@ public class UPMGeoCachingSkeleton {
 			System.out.println("Error al intentar añadir un usuario.\n");
 			e.printStackTrace();
 			response.get_return().setResponse(false);
+			System.out.println("AddUser3");
 			return response;
 		}
 	}
@@ -554,12 +572,19 @@ public class UPMGeoCachingSkeleton {
 
 			if (cpr.getResult()) {
 				//User usr = new User(username, nueva);
-				User user = users.get(username);
-				users.replace(username, user);
+				users.get(username).setPassword(nueva);
+				//User user = users.get(username);
+				//users.replace(username, user);
+				password = nueva;
 			}
 
 			response.setResponse(cpr.getResult());
 			cpresponse.set_return(response);
+			System.out.println("CHANGE PASSWORD:");
+			System.out.println("\t Usuario = " + username);
+			System.out.println("\t AntiguaPwd = " + vieja);
+			System.out.println("\t NuevaPwd = " + password);
+			System.out.println("\t PwdLista = " + users.get(username).getPassword());
 			return cpresponse;
 
 		} catch (RemoteException e) {
@@ -603,6 +628,7 @@ public class UPMGeoCachingSkeleton {
 				nsesiones++;
 				logged=true;
 				username= login.getArgs0().getName();
+				password = login.getArgs0().getPwd();
 				response.get_return().setResponse(true);
 			}
 			else
@@ -625,6 +651,7 @@ public class UPMGeoCachingSkeleton {
 			csResponse.get_return().getResult();
 			response.get_return().setResponse(true);
 			username=login.getArgs0().getName();
+			password = login.getArgs0().getPwd();
 			nsesiones++;
 			logged=true;
 			return response;
