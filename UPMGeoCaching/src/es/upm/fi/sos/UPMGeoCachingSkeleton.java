@@ -107,6 +107,8 @@ public class UPMGeoCachingSkeleton {
 
 		System.out.println("REMOVEFOLLOWER 1");
 		RemoveFollowerResponse response = new RemoveFollowerResponse();
+		Response param=new Response();
+		response.set_return(param);
 		if (!logged) {
 			response.get_return().setResponse(false);
 			return response;
@@ -119,6 +121,11 @@ public class UPMGeoCachingSkeleton {
 
 		}
 		System.out.println("REMOVEFOLLOWER 3 borrar followed: " + remUser);
+		System.out.println("1");
+		System.out.println(users);
+		System.out.println(users.get(username));
+		System.out.println(users.get(username).followed);
+		System.out.println(users.get(username).followed.remove(remUser));
 		users.get(username).followed.remove(remUser);
 		response.get_return().setResponse(true);
 		System.out.println("REMOVEFOLLOWER 4");
@@ -136,6 +143,8 @@ public class UPMGeoCachingSkeleton {
 			es.upm.fi.sos.GetMyTreasuresFound getMyTreasuresFound) {
 
 		GetMyTreasuresFoundResponse response = new GetMyTreasuresFoundResponse();
+		TreasureList param=new TreasureList();
+		response.set_return(param);
 
 		if (!logged) {
 			response.get_return().setResult(false);
@@ -190,13 +199,13 @@ public class UPMGeoCachingSkeleton {
 			arrayFollows[n] = nombreFollow;
 			n++;
 		}
-		
+
 		list.setResult(true);
 		list.setFollowers(arrayFollows);
 		gmfresponse.set_return(list);
 		System.out.println("GETMYFOLLOWERS");
 		System.out.println("\t resultado = " + gmfresponse.get_return().getResult());
-		System.out.println("\t primer follower = " + gmfresponse.get_return().getFollowers()[0]);
+		System.out.println("\t primer follower = " + gmfresponse.get_return().getFollowers());
 		return gmfresponse;
 
 	}
@@ -211,6 +220,8 @@ public class UPMGeoCachingSkeleton {
 	public es.upm.fi.sos.GetMyTreasuresCreatedResponse getMyTreasuresCreated(
 			es.upm.fi.sos.GetMyTreasuresCreated getMyTreasuresCreated) {
 		GetMyTreasuresCreatedResponse response = new GetMyTreasuresCreatedResponse();
+		TreasureList param=new TreasureList();
+		response.set_return(param);
 
 		if (!logged) {
 			response.get_return().setResult(false);
@@ -356,6 +367,8 @@ public class UPMGeoCachingSkeleton {
 			es.upm.fi.sos.CreateTreasure createTreasure) {
 
 		CreateTreasureResponse response = new CreateTreasureResponse();
+		Response param=new Response();
+		response.set_return(param);
 		if (!logged) {
 
 			response.get_return().setResponse(false);
@@ -393,6 +406,8 @@ public class UPMGeoCachingSkeleton {
 	public es.upm.fi.sos.FindTreasureResponse findTreasure(
 			es.upm.fi.sos.FindTreasure findTreasure) {
 		FindTreasureResponse response = new FindTreasureResponse();
+		Response param=new Response();
+		response.set_return(param);
 		String name = findTreasure.getArgs0().getName();
 		if (!logged || !treasures.containsKey(name)) {
 
@@ -400,11 +415,19 @@ public class UPMGeoCachingSkeleton {
 
 			return response;
 		}
-
+		
 		Tesoro t = treasures.get(name);
+		System.out.println(!t.foundBy.contains(username));
+		System.out.println(username);
+		System.out.println(t.foundBy.size());
+		for (String s : t.foundBy) {
+			System.out.println("\t "+s);
+		}
+		
 		if (!t.foundBy.contains(username)) {
 			users.get(username).treasuresFound.add(t);
 			t.foundBy.add(username);
+			System.out.println("SIZE: "+users.get(username).treasuresFound.size());
 		}
 		response.get_return().setResponse(true);
 
@@ -614,7 +637,7 @@ public class UPMGeoCachingSkeleton {
 		if (logged) {
 			if (username.equals(login.getArgs0().getName())) {
 				nsesiones++;
-				
+
 				response.get_return().setResponse(true);
 			}
 			else
