@@ -7,7 +7,7 @@
             <messageReceiver mep="http://www.w3.org/ns/wsdl/in-only" class="es.upm.fi.sos.UPMGeoCachingMessageReceiverInOnly"/>
             <messageReceiver mep="http://www.w3.org/ns/wsdl/in-out" class="es.upm.fi.sos.UPMGeoCachingMessageReceiverInOut"/>
         </messageReceivers>
-        <parameter name="ServiceClass">es.upm.fi.sos.UPMGeoCaching.UPMGeoCachingSkeleton</parameter>
+        <parameter name="ServiceClass">es.upm.fi.sos.UPMGeoCachingSkeleton</parameter>
         <parameter name="useOriginalwsdl">true</parameter>
         <parameter name="modifyUserWSDLPortAddress">true</parameter>
         <operation name="logout" mep="http://www.w3.org/ns/wsdl/in-only" namespace="http://sos.fi.upm.es">

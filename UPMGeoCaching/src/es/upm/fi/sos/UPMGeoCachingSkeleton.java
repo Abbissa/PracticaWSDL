@@ -48,6 +48,7 @@ public class UPMGeoCachingSkeleton {
 
 	public UPMGeoCachingSkeleton() {
 
+		System.out.println("Crear clase");
 		logged = false;
 		username = null;
 		password = null;
@@ -57,16 +58,18 @@ public class UPMGeoCachingSkeleton {
 			adminPWD = "admin";
 		if (users != null)
 			users = new HashMap<String, User>();*/
-		if(users.equals(null))
+		if(users==null)
 			users = new HashMap<String, User>();
-		if(treasures.equals(null))
+		if(treasures==null)
 			treasures = new HashMap<String, Tesoro>();
 		if (!users.containsKey(admin))
 			users.put(admin, new User(admin, adminPWD));
 		try {
 			cs = new UPMAuthenticationAuthorizationWSSkeletonStub();
-			cs._getServiceClient().getOptions().setManageSession(true);
-			cs._getServiceClient().engageModule("addressing");
+
+			//cs._getServiceClient().getOptions().setManageSession(true);
+			//cs._getServiceClient().engageModule("addressing");
+			System.out.println("Clase creada");
 		} catch (AxisFault e) {
 			System.out.println("Error de inicio de stub.\n");
 			e.printStackTrace();
@@ -165,28 +168,28 @@ public class UPMGeoCachingSkeleton {
 
 	public es.upm.fi.sos.GetMyFollowersResponse getMyFollowers(
 			es.upm.fi.sos.GetMyFollowers getMyFollowers) {
-		
+
 		GetMyFollowersResponse gmfresponse = new GetMyFollowersResponse();
 		FollowerList list = new FollowerList();
 		String[] arrayFollows;
-		
+
 		// Usuario no logeado falla
 		if (!logged) {
 			gmfresponse.set_return(list);
 			return gmfresponse;
 		}
-		
+
 		arrayFollows = new String [users.get(username).followed.size()];
 		int n = 0;
 		for (String nombreFollow : users.get(username).followed.keySet()) {
 			arrayFollows[n] = nombreFollow;
 			n++;
 		}
-		
+
 		list.setFollowers(arrayFollows);
 		gmfresponse.set_return(list);
 		return gmfresponse;
-		
+
 	}
 
 	/**
@@ -235,25 +238,28 @@ public class UPMGeoCachingSkeleton {
 
 	public es.upm.fi.sos.RemoveUserResponse removeUser(
 			es.upm.fi.sos.RemoveUser removeUser) {
-		
+
 		String usernameDelete = removeUser.getArgs0().getUsername();
 		Response response = new Response();
 		RemoveUserResponse removeRes = new RemoveUserResponse();
-		
+
 		// Comprobar si el usuario existe, está activo, y es el mismo que se quiere borrar
-		if (!users.containsKey(usernameDelete) || !logged || !username.equals(usernameDelete)) {
+		System.err.println(!logged);
+		if (!users.containsKey(usernameDelete) || !logged || (!username.equals(usernameDelete) && !username.equals("admin"))) {
+			System.out.println("Fallo");
 			response.setResponse(false);
 			removeRes.set_return(response);
 			return removeRes;
 		}
-		
+
 		// Si se puede borrar:
+		System.out.println("BORRAR");
 		RemoveUser ruser = new RemoveUser();
 		RemoveUserE rusere = new RemoveUserE();
 		ruser.setName(usernameDelete);
 		ruser.setPassword(users.get(usernameDelete).getPassword());
 		rusere.setRemoveUser(ruser);
-		
+
 		try {
 			RemoveUserResponseE rure = cs.removeUser(rusere);
 			cliente.UpmAuthenticationAuthorization.UPMAuthenticationAuthorizationWSSkeletonStub.RemoveUserResponse rur = rure.get_return();
@@ -287,7 +293,7 @@ public class UPMGeoCachingSkeleton {
 			// 4. Borrar usuario de lista de usuarios
 			users.remove(usernameDelete);
 			return removeRes;
-			
+
 		} catch (RemoteException e) {
 			e.printStackTrace();
 			response.setResponse(false);
@@ -305,18 +311,18 @@ public class UPMGeoCachingSkeleton {
 
 	public es.upm.fi.sos.AddFollowerResponse addFollower(
 			es.upm.fi.sos.AddFollower addFollower) {
-		
+
 		AddFollowerResponse afresponse = new AddFollowerResponse();
 		Response response = new Response();
 		String followName = addFollower.getArgs0().getUsername();
-		
+
 		// Casos en los que falla la llamada al metodo: el follower no existe, el usuario actual no esta logeado o el follower ya es follower
 		if(!users.containsKey(followName) || !logged || users.get(username).followed.containsKey(followName)) {
 			response.setResponse(false);
 			afresponse.set_return(response);
 			return afresponse;
 		}
-		
+
 		// Si no se da ninguna de las condiciones anteriores, se anyade el follower
 		users.get(username).followed.put(followName, users.get(followName));
 		response.setResponse(true);
@@ -401,7 +407,10 @@ public class UPMGeoCachingSkeleton {
 	public es.upm.fi.sos.AddUserResponse addUser(es.upm.fi.sos.AddUser addUser) {
 
 		AddUserResponse response = new AddUserResponse();
-		if (logged = false || username != admin) {
+		es.upm.fi.sos.model.xsd.AddUserResponse param= new es.upm.fi.sos.model.xsd.AddUserResponse();
+		response.set_return(param);
+		if (!logged || username == null || !username.equals(admin)) {
+
 			response.get_return().setResponse(false);
 			return response;
 		}
@@ -415,6 +424,7 @@ public class UPMGeoCachingSkeleton {
 		try {
 			cliente.UpmAuthenticationAuthorization.UPMAuthenticationAuthorizationWSSkeletonStub.AddUserResponse csResponse = cs
 					.addUser(addUserStub);
+			System.out.println(csResponse.get_return().getResult());
 			if (csResponse.get_return().getResult()) {
 
 				String name = addUser.getArgs0().getUsername();
@@ -425,8 +435,10 @@ public class UPMGeoCachingSkeleton {
 
 				User user = new User(name, password);
 				users.put(name, user);
-			} else
+			} else{
+				
 				response.get_return().setResponse(false);
+			}
 			return response;
 
 		} catch (RemoteException e) {
@@ -446,21 +458,21 @@ public class UPMGeoCachingSkeleton {
 
 	public es.upm.fi.sos.GetMyFollowerTreasuresCreatedResponse getMyFollowerTreasuresCreated(
 			es.upm.fi.sos.GetMyFollowerTreasuresCreated getMyFollowerTreasuresCreated) {
-		
+
 		String nameFollowed = getMyFollowerTreasuresCreated.getArgs0().getUsername();
 		GetMyFollowerTreasuresCreatedResponse gmftcresponse = new GetMyFollowerTreasuresCreatedResponse();
 		TreasureList tlist = new TreasureList();
 		String[] names;
 		double[] lats;
 		double[] alts;
-		
+
 		// Comprobar usuario loggeado y nameFollowed existe en lista de follows de usuario
 		if (!logged || !users.get(username).followed.containsKey(nameFollowed)) {
 			tlist.setResult(false);
 			gmftcresponse.set_return(tlist);
 			return gmftcresponse;
 		}
-		
+
 		names = new String [users.get(nameFollowed).treasuresCreated.size()];
 		lats = new double [users.get(nameFollowed).treasuresCreated.size()];
 		alts = new double [users.get(nameFollowed).treasuresCreated.size()];
@@ -469,14 +481,14 @@ public class UPMGeoCachingSkeleton {
 			lats[i] = users.get(nameFollowed).treasuresCreated.get(i).getLatitude();
 			alts[i] = users.get(nameFollowed).treasuresCreated.get(i).getAltitude();
 		}
-		
+
 		tlist.setResult(true);
 		tlist.setNames(names);
 		tlist.setLats(lats);
 		tlist.setAlts(alts);
 		gmftcresponse.set_return(tlist);
 		return gmftcresponse;
-		
+
 	}
 
 	/**
@@ -488,25 +500,25 @@ public class UPMGeoCachingSkeleton {
 
 	public es.upm.fi.sos.ChangePasswordResponse changePassword(
 			es.upm.fi.sos.ChangePassword changePassword) {
-		
+
 		PasswordPair passwords = changePassword.getArgs0();
 		String vieja = passwords.getOldpwd();
 		String nueva = passwords.getNewpwd();
 		ChangePasswordResponse cpresponse = new ChangePasswordResponse();
 		Response response = new Response();
-		
+
 		// Comprobar usuario actual
 		if (!logged) {
 			response.setResponse(false);
 			cpresponse.set_return(response);
 			return cpresponse;
 		}
-		
+
 		// Comprobar que contrasenya antigua = actual
 		if (vieja.equals(password)) {
 			vieja = users.get(username).getPassword();
 		}
-		
+
 		// Si se quiere cambiar la de admin, primero comprobar que es el y que antigua es correcta
 		if (username.equals(admin) && username != null) {
 			if (vieja.equals(adminPWD)) {
@@ -519,14 +531,14 @@ public class UPMGeoCachingSkeleton {
 				cpresponse.set_return(response);
 				return cpresponse;
 			}
-			
+
 			else {
 				response.setResponse(false);
 				cpresponse.set_return(response);
 				return cpresponse;
 			}
 		}
-		
+
 		ChangePasswordBackEnd cpbackend = new ChangePasswordBackEnd();
 		ChangePasswordResponseE cpresponseE;
 		ChangePassword cpassword = new ChangePassword();
@@ -534,26 +546,26 @@ public class UPMGeoCachingSkeleton {
 		cpbackend.setOldpwd(vieja);
 		cpbackend.setNewpwd(nueva);
 		cpassword.setChangePassword(cpbackend);
-		
+
 		try {
-			
+
 			cpresponseE = cs.changePassword(cpassword);
 			cliente.UpmAuthenticationAuthorization.UPMAuthenticationAuthorizationWSSkeletonStub.ChangePasswordResponse cpr = cpresponseE.get_return();
-			
+
 			if (cpr.getResult()) {
 				//User usr = new User(username, nueva);
 				User user = users.get(username);
 				users.replace(username, user);
 			}
-			
+
 			response.setResponse(cpr.getResult());
 			cpresponse.set_return(response);
 			return cpresponse;
-			
+
 		} catch (RemoteException e) {
 			response.setResponse(false);
 			cpresponse.set_return(response);
-			
+
 			e.printStackTrace();
 			System.out.println("Error al cambiar contrasenya.\n");
 			return cpresponse;
@@ -568,22 +580,29 @@ public class UPMGeoCachingSkeleton {
 	 */
 
 	public es.upm.fi.sos.LoginResponse login(es.upm.fi.sos.Login login) {
-
+		System.out.println("Inicio login");
 		LoginResponse response = new LoginResponse();
+
+		Response aux=new Response();
+		response.set_return(aux);
 
 		if (logged) {
 			if (username.equals(login.getArgs0().getName())) {
 				nsesiones++;
+				
 				response.get_return().setResponse(true);
 			}
 			else
 				response.get_return().setResponse(false);
+
 			return response;
 		}
 
 		if (login.getArgs0().getName().equals(admin)) {
 			if (login.getArgs0().getPwd().equals(adminPWD)) {
 				nsesiones++;
+				logged=true;
+				username= login.getArgs0().getName();
 				response.get_return().setResponse(true);
 			}
 			else
@@ -605,7 +624,9 @@ public class UPMGeoCachingSkeleton {
 					.login(log);
 			csResponse.get_return().getResult();
 			response.get_return().setResponse(true);
+			username=login.getArgs0().getName();
 			nsesiones++;
+			logged=true;
 			return response;
 		} catch (RemoteException e) {
 			System.out.println("Error al hacer login.\n");
@@ -633,26 +654,26 @@ public class UPMGeoCachingSkeleton {
 			this.treasuresFound = new ArrayList<Tesoro>();
 			this.followed = new HashMap<String, User>();
 		}
-		
+
 		public String getPassword() {
 			return password;
 		}
-		
+
 		public void setPassword(String password) {
 			this.password = password;
 		}
-		
+
 		public ArrayList<Tesoro> getTreasuresCreated () {
 			return treasuresCreated;
 		}
-		
+
 		public ArrayList<Tesoro> getTreasuresFound () {
 			return treasuresFound;
 		}
 		public HashMap<String,User> getFollowed() {
 			return followed;
 		}
-		
+
 		public void setFollowed(HashMap<String,User> followed) {
 			this.followed = followed;
 		}
@@ -673,7 +694,7 @@ public class UPMGeoCachingSkeleton {
 			this.altitude = altitude;
 			this.foundBy = new HashSet<String>();
 		}
-		
+
 		public String getNombre() {
 			return nombre;
 		}
