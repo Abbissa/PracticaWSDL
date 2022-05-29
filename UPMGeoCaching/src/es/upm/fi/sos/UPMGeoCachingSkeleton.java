@@ -148,6 +148,7 @@ public class UPMGeoCachingSkeleton {
 
 		if (!logged) {
 			response.get_return().setResult(false);
+			return response;
 		}
 		response.get_return().setResult(true);
 
@@ -159,11 +160,14 @@ public class UPMGeoCachingSkeleton {
 		double[] lats = new double[size];
 		String[] names = new String[size];
 		int i = 0;
-		for (Tesoro treasure : user.treasuresFound) {
-
-			alts[i] = treasure.altitude;
-			lats[i] = treasure.latitude;
-			names[i] = treasure.nombre;
+		//for (Tesoro treasure : user.treasuresFound) {
+		for (String treasure : user.treasuresFound) {
+			//alts[i] = treasure.altitude;
+			alts[i] = treasures.get(treasure).getAltitude();
+			//lats[i] = treasure.latitude;
+			lats[i] = treasures.get(treasure).getLatitude();
+			//names[i] = treasure.nombre;
+			names[i] = treasures.get(treasure).getNombre();
 
 		}
 		response.get_return().setAlts(alts);
@@ -182,6 +186,7 @@ public class UPMGeoCachingSkeleton {
 	public es.upm.fi.sos.GetMyFollowersResponse getMyFollowers(
 			es.upm.fi.sos.GetMyFollowers getMyFollowers) {
 
+		System.out.println("GETMYFOLLOWERS");
 		GetMyFollowersResponse gmfresponse = new GetMyFollowersResponse();
 		FollowerList list = new FollowerList();
 		String[] arrayFollows;
@@ -190,6 +195,7 @@ public class UPMGeoCachingSkeleton {
 		if (!logged) {
 			list.setResult(false);
 			gmfresponse.set_return(list);
+			System.out.println("\t Usuario no loggeado");
 			return gmfresponse;
 		}
 
@@ -203,9 +209,9 @@ public class UPMGeoCachingSkeleton {
 		list.setResult(true);
 		list.setFollowers(arrayFollows);
 		gmfresponse.set_return(list);
-		System.out.println("GETMYFOLLOWERS");
 		System.out.println("\t resultado = " + gmfresponse.get_return().getResult());
 		System.out.println("\t primer follower = " + gmfresponse.get_return().getFollowers());
+		System.out.println("\t tamanyo lista followed = " + users.get(username).followed.size());
 		return gmfresponse;
 
 	}
@@ -219,6 +225,8 @@ public class UPMGeoCachingSkeleton {
 
 	public es.upm.fi.sos.GetMyTreasuresCreatedResponse getMyTreasuresCreated(
 			es.upm.fi.sos.GetMyTreasuresCreated getMyTreasuresCreated) {
+		
+		System.out.println("GET MY TREASURES CREATED");
 		GetMyTreasuresCreatedResponse response = new GetMyTreasuresCreatedResponse();
 		TreasureList param=new TreasureList();
 		response.set_return(param);
@@ -231,6 +239,7 @@ public class UPMGeoCachingSkeleton {
 		User user = users.get(username);
 
 		int size = user.treasuresCreated.size();
+		System.out.println("\t Numero de tesoros creados por " + username + " = " + size);
 
 		double[] alts = new double[size];
 		double[] lats = new double[size];
@@ -243,6 +252,7 @@ public class UPMGeoCachingSkeleton {
 			names[i] = treasure.nombre;
 
 		}
+		System.out.println(alts.length + " ; " + lats.length + " ; " + names.length);
 		response.get_return().setAlts(alts);
 		response.get_return().setLats(lats);
 		response.get_return().setNames(names);
@@ -405,6 +415,7 @@ public class UPMGeoCachingSkeleton {
 
 	public es.upm.fi.sos.FindTreasureResponse findTreasure(
 			es.upm.fi.sos.FindTreasure findTreasure) {
+		System.out.println("FINDTREASURE");
 		FindTreasureResponse response = new FindTreasureResponse();
 		Response param=new Response();
 		response.set_return(param);
@@ -417,17 +428,21 @@ public class UPMGeoCachingSkeleton {
 		}
 		
 		Tesoro t = treasures.get(name);
-		System.out.println(!t.foundBy.contains(username));
-		System.out.println(username);
-		System.out.println(t.foundBy.size());
+		System.out.println("\t " + !t.foundBy.contains(username));
+		System.out.println("\t" + username);
+		System.out.println("\t" + t.foundBy.size());
 		for (String s : t.foundBy) {
-			System.out.println("\t "+s);
+			System.out.println("\t\t "+s);
 		}
 		
-		if (!t.foundBy.contains(username)) {
-			users.get(username).treasuresFound.add(t);
+		//if (!t.foundBy.contains(username)) {
+		if (!users.get(username).treasuresFound.contains(t.getNombre())) {
+			//users.get(username).treasuresFound.add(t);
+			users.get(username).treasuresFound.add(t.nombre);
+			System.out.println();
 			t.foundBy.add(username);
-			System.out.println("SIZE: "+users.get(username).treasuresFound.size());
+			System.out.println("\t Tamanyo de foundby = " + t.foundBy.size());
+			System.out.println("\t SIZE: "+users.get(username).treasuresFound.size());
 		}
 		response.get_return().setResponse(true);
 
@@ -500,9 +515,11 @@ public class UPMGeoCachingSkeleton {
 	public es.upm.fi.sos.GetMyFollowerTreasuresCreatedResponse getMyFollowerTreasuresCreated(
 			es.upm.fi.sos.GetMyFollowerTreasuresCreated getMyFollowerTreasuresCreated) {
 
+		System.out.println("GET MY FOLLOWER CREATED");
 		String nameFollowed = getMyFollowerTreasuresCreated.getArgs0().getUsername();
 		GetMyFollowerTreasuresCreatedResponse gmftcresponse = new GetMyFollowerTreasuresCreatedResponse();
 		TreasureList tlist = new TreasureList();
+		System.out.println(users.get(username).followed.size());
 		String[] names;
 		double[] lats;
 		double[] alts;
@@ -511,13 +528,18 @@ public class UPMGeoCachingSkeleton {
 		if (!logged || !users.get(username).followed.containsKey(nameFollowed)) {
 			tlist.setResult(false);
 			gmftcresponse.set_return(tlist);
+			System.out.println("\t Fallo del metodo, response = false");
+			System.out.println("\t Es amigo = " + users.get(username).followed.containsKey(nameFollowed));
 			return gmftcresponse;
 		}
 
 		names = new String [users.get(nameFollowed).treasuresCreated.size()];
+		System.out.println(names.length);
 		lats = new double [users.get(nameFollowed).treasuresCreated.size()];
+		System.out.println(lats.length);
 		alts = new double [users.get(nameFollowed).treasuresCreated.size()];
-		for (int i = 0; i < users.get(nameFollowed).treasuresCreated.size() - 1; i++) {
+		System.out.println(alts.length);
+		for (int i = 0; i < users.get(nameFollowed).treasuresCreated.size(); i++) {
 			names[i] = users.get(nameFollowed).treasuresCreated.get(i).getNombre();
 			lats[i] = users.get(nameFollowed).treasuresCreated.get(i).getLatitude();
 			alts[i] = users.get(nameFollowed).treasuresCreated.get(i).getAltitude();
@@ -672,14 +694,18 @@ public class UPMGeoCachingSkeleton {
 			cliente.UpmAuthenticationAuthorization.UPMAuthenticationAuthorizationWSSkeletonStub.LoginResponse csResponse = cs
 					.login(log);
 			csResponse.get_return().getResult();
-			response.get_return().setResponse(true);
-			username=login.getArgs0().getName();
-			password = login.getArgs0().getPwd();
-			nsesiones++;
-			logged=true;
+			//response.get_return().setResponse(true);
+			aux.setResponse(csResponse.get_return().getResult());
+			response.set_return(aux);
+			if (aux.getResponse()) {
+				username = login.getArgs0().getName();
+				password = login.getArgs0().getPwd();
+				nsesiones++;
+				logged = true;
+			}
 			return response;
 		} catch (RemoteException e) {
-			System.out.println("Error al hacer login.\n");
+			System.out.println("Error en login.\n");
 			e.printStackTrace();
 
 			return null;
@@ -694,14 +720,16 @@ public class UPMGeoCachingSkeleton {
 		HashMap<String, User> followed;
 
 		ArrayList<Tesoro> treasuresCreated;
-		ArrayList<Tesoro> treasuresFound;
+		//ArrayList<Tesoro> treasuresFound;
+		ArrayList<String> treasuresFound;
 
 		public User(String username, String password) {
 
 			this.username = username;
 			this.password = password;
 			this.treasuresCreated = new ArrayList<Tesoro>();
-			this.treasuresFound = new ArrayList<Tesoro>();
+			//this.treasuresFound = new ArrayList<Tesoro>();
+			this.treasuresFound = new ArrayList<String>();
 			this.followed = new HashMap<String, User>();
 		}
 
@@ -717,7 +745,10 @@ public class UPMGeoCachingSkeleton {
 			return treasuresCreated;
 		}
 
-		public ArrayList<Tesoro> getTreasuresFound () {
+		/*public ArrayList<Tesoro> getTreasuresFound () {
+			return treasuresFound;
+		}*/
+		public ArrayList<String> getTreasuresFound () {
 			return treasuresFound;
 		}
 		public HashMap<String,User> getFollowed() {
