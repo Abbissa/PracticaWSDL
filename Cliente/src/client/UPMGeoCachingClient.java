@@ -39,10 +39,10 @@ public class UPMGeoCachingClient {
 		
 		System.out.println("INICIO DE PRUEBAS \n");
 		
-		String usuario1 = "Carlos40";
-		String usuario2 = "Carlos41";
-		String usuario3 = "Carlos42";
-		String usuario4 = "Carlos43";
+		String usuario1 = "USUARIONUEVO123451";
+		String usuario2 = "USUARIONUEVO147246";
+		String usuario3 = "USUARIONUEVO221412";
+		String usuario4 = "USUARIONUEVO947973";
 
 		// PRUEBA LOGGIN DE ADMIN
 		System.out.println("1. LOGIN DE ADMIN");
