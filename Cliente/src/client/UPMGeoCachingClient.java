@@ -39,8 +39,8 @@ public class UPMGeoCachingClient {
 		
 		System.out.println("INICIO DE PRUEBAS \n");
 		
-		String usuario1 = "usuario1";
-		String usuario2 = "usuario2";
+		String usuario1 = "Carlos3";
+		String usuario2 = "Carlos4";
 
 		// PRUEBA LOGGIN DE ADMIN
 		System.out.println("1. LOGIN DE ADMIN");
@@ -117,7 +117,7 @@ public class UPMGeoCachingClient {
 		System.out.println("\t Salida: "+ lr2.get_return().getResponse() + "\n");
 		
 		
-
+		
 		// PRUEBA CHANGEPASSWORD USUARIO 1
 		System.out.println("5. CAMBIAR PASSWORD DE USUARIO1");
 		PasswordPair pp = new PasswordPair();
@@ -191,9 +191,69 @@ public class UPMGeoCachingClient {
 		login6.setArgs0(user6);
 		LoginResponse lr6 = cs6.login(login6);
 		System.out.println("\t Salida: "+ lr6.get_return().getResponse() + "\n");
+
+
+
+		// CAMBIO DE CONTRASEÑA SUCESIVOS DESDE DISTINTOS STUBS
+		System.out.println("5.6. LOGIN DE VARIOS STUBS CON USUARIO1");
+		UPMGeoCachingStub cs7 = new UPMGeoCachingStub();
+		cs7._getServiceClient().engageModule("addressing");
+		cs7._getServiceClient().getOptions().setManageSession(true);
+		Login login7 = new Login();
+		User user7 = new User();
+		user7.setName(usuario1);
+		user7.setPwd("nueva2");
+		login7.setArgs0(user7);
+		LoginResponse lr7 = cs7.login(login7);
+		System.out.println("\t Salida: "+ lr7.get_return().getResponse() + "\n");
+
+		UPMGeoCachingStub cs8 = new UPMGeoCachingStub();
+		cs8._getServiceClient().engageModule("addressing");
+		cs8._getServiceClient().getOptions().setManageSession(true);
+		Login login8 = new Login();
+		User user8 = new User();
+		user8.setName(usuario1);
+		user8.setPwd("nueva2");
+		login8.setArgs0(user8);
+		LoginResponse lr8 = cs8.login(login8);
+		System.out.println("\t Salida: "+ lr8.get_return().getResponse() + "\n");
+
+		// CAMBIOS DE CONTRASEÑA DESDE DISTINTOS STUBS
+		System.out.println("5.7. CAMBIAR PASSWORD DESDE LOS DOS STUBS, LOS DOS CON LA CONTRASEÑA CON LA QUE HAN HECHO EL LOGIN");
+		PasswordPair pp3 = new PasswordPair();
+		ChangePassword cp3 = new ChangePassword();
+		pp3.setNewpwd("CAMBIO1");
+		pp3.setOldpwd("nueva2");
+		cp3.setArgs0(pp3);
+		ChangePasswordResponse cpr3 = new ChangePasswordResponse();
+		cpr3 = cs7.changePassword(cp3);
+		System.out.println("\t Resultado = " + cpr3.get_return().getResponse() + "\n");
+
+		PasswordPair pp4 = new PasswordPair();
+		ChangePassword cp4 = new ChangePassword();
+		pp4.setNewpwd("CAMBIO2");
+		pp4.setOldpwd("nueva2");
+		cp4.setArgs0(pp4);
+		ChangePasswordResponse cpr4 = new ChangePasswordResponse();
+		cpr4 = cs8.changePassword(cp4);
+		System.out.println("\t Resultado = " + cpr4.get_return().getResponse() + "\n");
+
+		// 	LOGIN CON CONTRASEÑA NUEVA
+		System.out.println("5.8. LOGIN DE NUEVO USUARIO CON ULTIMO CAMBIO DE CONTRASEÑA");
+		UPMGeoCachingStub cs9 = new UPMGeoCachingStub();
+		cs9._getServiceClient().engageModule("addressing");
+		cs9._getServiceClient().getOptions().setManageSession(true);
+		Login login9 = new Login();
+		User user9 = new User();
+		user9.setName(usuario1);
+		user9.setPwd("CAMBIO2");
+		login9.setArgs0(user9);
+		LoginResponse lr9 = cs9.login(login9);
+		System.out.println("\t Salida: "+ lr9.get_return().getResponse() + "\n");
+
 		
 		// LOGOUT DE USUARIO 1 SESIONES 2 Y 3
-		System.out.println("5.6. LOGOUT DE USUARIO 1 SESIONES 2 Y 3");
+		System.out.println("5.6. LOGOUT DE USUARIO 1 SESIONES 2, 3, 4, 5 Y 6 ");
 		Logout logout10 = new Logout();
 		cs4.logout(logout10);
 		System.out.println("\t Logout sesion 2 realizado \n");
@@ -201,6 +261,18 @@ public class UPMGeoCachingClient {
 		Logout logout11 = new Logout();
 		cs6.logout(logout11);
 		System.out.println("\t Logout sesion 3 realizado \n");
+		
+		Logout logout12 = new Logout();
+		cs7.logout(logout12);
+		System.out.println("\t Logout sesion 4 realizado \n");
+		
+		Logout logout13 = new Logout();
+		cs8.logout(logout13);
+		System.out.println("\t Logout sesion 5 realizado \n");
+		
+		Logout logout14 = new Logout();
+		cs9.logout(logout14);
+		System.out.println("\t Logout sesion 6 realizado \n");
 
 		// PRUEBA ADDFOLLOWER A USARIO 1 DE USUARIO 2
 		System.out.println("6. ADDFOLLOWER A USUARIO1 DE USUARIO2");
