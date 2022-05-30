@@ -141,6 +141,7 @@ public class UPMGeoCachingSkeleton {
 	public es.upm.fi.sos.GetMyTreasuresFoundResponse getMyTreasuresFound(
 			es.upm.fi.sos.GetMyTreasuresFound getMyTreasuresFound) {
 
+		System.out.println("\n GET MY TREASURES FOUND");
 		GetMyTreasuresFoundResponse response = new GetMyTreasuresFoundResponse();
 		TreasureList param = new TreasureList();
 		response.set_return(param);
@@ -159,14 +160,19 @@ public class UPMGeoCachingSkeleton {
 		double[] lats = new double[size];
 		String[] names = new String[size];
 		int i = 0;
+		System.out.println("\t Tam = " + user.treasuresFound.size());
 		// for (Tesoro treasure : user.treasuresFound) {
 		for (String treasure : user.treasuresFound) {
 			// alts[i] = treasure.altitude;
 			alts[i] = treasures.get(treasure).getAltitude();
+			System.out.println(i + " " + alts[i]);
 			// lats[i] = treasure.latitude;
 			lats[i] = treasures.get(treasure).getLatitude();
+			System.out.println(i + " " + lats[i]);
 			// names[i] = treasure.nombre;
 			names[i] = treasures.get(treasure).getNombre();
+			System.out.println(i + " " + names[i]);
+			i++;
 
 		}
 		response.get_return().setAlts(alts);
@@ -235,6 +241,7 @@ public class UPMGeoCachingSkeleton {
 
 		if (!logged || !checkUser(username)) {
 			response.get_return().setResult(false);
+			return response;
 		}
 		response.get_return().setResult(true);
 
@@ -253,6 +260,7 @@ public class UPMGeoCachingSkeleton {
 			alts[i] = treasure.altitude;
 			lats[i] = treasure.latitude;
 			names[i] = treasure.nombre;
+			i++;
 
 		}
 		System.out.println(alts.length + " ; " + lats.length + " ; "
@@ -336,6 +344,17 @@ public class UPMGeoCachingSkeleton {
 					users.replace(clave, userAux);
 				}
 			}
+
+			// Borrar tesoros creados por el usuario de tesoros encontrados por
+			// otros usuarios
+			for (int i = 0; i < users.get(usernameDelete).treasuresCreated.size(); i++) {
+				String tesoroBorrar = users.get(usernameDelete).treasuresCreated.get(i).nombre;
+				for (String clave : users.keySet()) {
+					if (users.get(clave).treasuresFound.contains(tesoroBorrar))
+						users.get(clave).treasuresFound.remove(tesoroBorrar);
+				}
+			}
+			
 			// 4. Borrar usuario de lista de usuarios
 			users.remove(usernameDelete);
 			int i = 0;
@@ -413,18 +432,24 @@ public class UPMGeoCachingSkeleton {
 		double latitude = createTreasure.getArgs0().getLatitude();
 
 		if (treasures.containsKey(name)) {
-
-			Tesoro t = treasures.get(name);
-
-			t.altitude = altitude;
-			t.latitude = latitude;
-			return response;
+			if (users.get(username).getTreasuresCreated().contains(name)) {
+				Tesoro t = treasures.get(name);
+				t.altitude = altitude;
+				t.latitude = latitude;
+				return response;
+				
+			} else {
+				response.get_return().setResponse(false);
+				return response;
+			}
 		}
 
 		Tesoro t = new Tesoro(name, altitude, latitude);
 
 		treasures.put(name, t);
 		users.get(username).treasuresCreated.add(t);
+		int ttt = users.get(username).treasuresCreated.size();
+		System.out.println("LISTA CREADOS DE USUARIO " + users.get(username).treasuresCreated.get(ttt - 1).nombre + " ; " + users.get(username).treasuresCreated.get(0).getNombre());
 
 		return response;
 	}
@@ -443,32 +468,34 @@ public class UPMGeoCachingSkeleton {
 		Response param = new Response();
 		response.set_return(param);
 		String name = findTreasure.getArgs0().getName();
+		System.out.println(name);
 
 
 		if (!logged ||!checkUser(username) || !treasures.containsKey(name)) {
-
 			response.get_return().setResponse(false);
-
 			return response;
 		}
 
 		Tesoro t = treasures.get(name);
-		System.out.println("\t " + !t.foundBy.contains(username));
-		System.out.println("\t" + username);
-		System.out.println("\t" + t.foundBy.size());
-		for (String s : t.foundBy) {
-			System.out.println("\t\t " + s);
-		}
+		//System.out.println("\t " + !t.foundBy.contains(username));
+		//System.out.println("\t" + username);
+		//System.out.println("\t" + t.foundBy.size());
+		//for (String s : t.foundBy) {
+		//	System.out.println("\t\t " + s);
+		//}
 
 		// if (!t.foundBy.contains(username)) {
-		if (!users.get(username).treasuresFound.contains(t.getNombre())) {
+		/*if (!users.get(username).treasuresFound.contains(t.getNombre())) {
 			// users.get(username).treasuresFound.add(t);
 			users.get(username).treasuresFound.add(t.nombre);
 			System.out.println();
-			t.foundBy.add(username);
-			System.out.println("\t Tamanyo de foundby = " + t.foundBy.size());
-			System.out.println("\t SIZE: "
-					+ users.get(username).treasuresFound.size());
+			//t.foundBy.add(username);
+			//System.out.println("\t Tamanyo de foundby = " + t.foundBy.size());
+			//System.out.println("\t SIZE: "
+			//		+ users.get(username).treasuresFound.size());
+		}*/
+		if (!users.get(username).treasuresFound.contains(name)) {
+			users.get(username).treasuresFound.add(name);
 		}
 		response.get_return().setResponse(true);
 
