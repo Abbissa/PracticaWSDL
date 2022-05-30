@@ -39,8 +39,10 @@ public class UPMGeoCachingClient {
 		
 		System.out.println("INICIO DE PRUEBAS \n");
 		
-		String usuario1 = "Carlos3";
-		String usuario2 = "Carlos4";
+		String usuario1 = "Carlos40";
+		String usuario2 = "Carlos41";
+		String usuario3 = "Carlos42";
+		String usuario4 = "Carlos43";
 
 		// PRUEBA LOGGIN DE ADMIN
 		System.out.println("1. LOGIN DE ADMIN");
@@ -77,7 +79,17 @@ public class UPMGeoCachingClient {
 		username5.setUsername(usuario2);
 		ruser5.setArgs0(username5);
 		ruserres5 = cs.removeUser(ruser5);
-		System.out.println("\t REMOVEUSER usuario2: resultado = " + ruserres5.get_return().getResponse() + "\n");
+		System.out.println("\t REMOVEUSER usuario2: resultado = " + ruserres5.get_return().getResponse());
+
+		// BORRAR USUARIO 3
+		Username username6 = new Username();
+		RemoveUser ruser6 = new RemoveUser();
+		RemoveUserResponse ruserres6 = new RemoveUserResponse();
+		username6.setUsername(usuario3);
+		ruser6.setArgs0(username6);
+		ruserres6 = cs.removeUser(ruser6);
+		System.out.println("\t REMOVEUSER usuario3: resultado = "
+				+ ruserres6.get_return().getResponse() + "\n");
 
 		// PRUEBA ADDUSER
 		System.out.println("3. AÑADIR USUARIOS");
@@ -98,8 +110,21 @@ public class UPMGeoCachingClient {
 		addUser2.setArgs0(newUser2);
 		addUserRE2 = cs.addUser(addUser2);
 		String pwdDev2 = addUserRE2.get_return().getPwd();
-		System.out.println("\t Resultado usuario2 = " + addUserRE2.get_return().getResponse() + " y pwd = " + pwdDev2 + "\n");
-
+		System.out.println("\t Resultado usuario2 = " + addUserRE2.get_return().getResponse() + " y pwd = " + pwdDev2);
+		
+		// PRUEBA ADDUSER 3
+		AddUser addUser3 = new AddUser();
+		AddUserResponseE addUserRE3 = new AddUserResponseE();
+		Username newUser3 = new Username();
+		newUser3.setUsername(usuario3);
+		addUser3.setArgs0(newUser3);
+		addUserRE3 = cs.addUser(addUser3);
+		String pwdDev3 = addUserRE3.get_return().getPwd();
+		System.out.println("\t Resultado usuario3 = "
+				+ addUserRE3.get_return().getResponse() + " y pwd = " + pwdDev3
+				+ "\n");
+	
+		
 		// PRUEBA LOGIN DE USUARIO1
 		System.out.println("4. LOGIN DE USUARIO1");
 		UPMGeoCachingStub cs2 = new UPMGeoCachingStub();
@@ -117,6 +142,34 @@ public class UPMGeoCachingClient {
 		System.out.println("\t Salida: "+ lr2.get_return().getResponse() + "\n");
 		
 		
+		// PRUEBA ADDUSER DESDE UN USUARIO QUE NO ES ADMIN
+		System.out.println("4.1. INTENTO DE AÑADIR USUARIO DESDE USUARIO 1");
+		AddUser addUser4 = new AddUser();
+		AddUserResponseE addUserRE4 = new AddUserResponseE();
+		Username newUser4 = new Username();
+		newUser4.setUsername(usuario4);
+		addUser4.setArgs0(newUser4);
+		addUserRE4 = cs2.addUser(addUser4);
+		String pwdDev4 = addUserRE4.get_return().getPwd();
+		System.out.println("\t Resultado usuario4 = " + addUserRE4.get_return().getResponse() + " y pwd = " + pwdDev4 + "\n");
+		
+		// PRUEBA LOGIN DE USUARIO2
+		System.out.println("4.2. LOGIN DE USUARIO2");
+		UPMGeoCachingStub cs10 = new UPMGeoCachingStub();
+		cs10._getServiceClient().engageModule("addressing");
+		cs10._getServiceClient().getOptions().setManageSession(true);
+		System.out.println("\t Stub creado");
+		Login login10 = new Login();
+		User user10 = new User();
+		user10.setName(usuario2);
+		user10.setPwd(pwdDev2);
+		login10.setArgs0(user10);
+		System.out.println("\t Enviando peticion login");
+		LoginResponse lr10 = cs10.login(login10);
+		System.out
+				.println("\t Login realizado del usuario " + user10.getName());
+		System.out.println("\t Salida: " + lr10.get_return().getResponse()
+				+ "\n");
 		
 		// PRUEBA CHANGEPASSWORD USUARIO 1
 		System.out.println("5. CAMBIAR PASSWORD DE USUARIO1");
@@ -253,7 +306,7 @@ public class UPMGeoCachingClient {
 
 		
 		// LOGOUT DE USUARIO 1 SESIONES 2 Y 3
-		System.out.println("5.6. LOGOUT DE USUARIO 1 SESIONES 2, 3, 4, 5 Y 6 ");
+		System.out.println("5.9. LOGOUT DE USUARIO 1 SESIONES 2, 3, 4, 5 Y 6 ");
 		Logout logout10 = new Logout();
 		cs4.logout(logout10);
 		System.out.println("\t Logout sesion 2 realizado \n");
@@ -274,15 +327,23 @@ public class UPMGeoCachingClient {
 		cs9.logout(logout14);
 		System.out.println("\t Logout sesion 6 realizado \n");
 
-		// PRUEBA ADDFOLLOWER A USARIO 1 DE USUARIO 2
-		System.out.println("6. ADDFOLLOWER A USUARIO1 DE USUARIO2");
+		// PRUEBA ADDFOLLOWER A USUARIO 1 DE USUARIO 2
+		System.out.println("6. ADDFOLLOWERs A USUARIO1 DE USUARIO2 Y USUARIO3");
 		AddFollower af = new AddFollower();
 		Username friend = new Username();
 		AddFollowerResponse afr = new AddFollowerResponse();
 		friend.setUsername(usuario2);
 		af.setArgs0(friend);
 		afr = cs2.addFollower(af);
-		System.out.println("\t ADDFOLLOWER resultado = " + afr.get_return().getResponse() + "\n");
+		System.out.println("\t ADDFOLLOWER resultado = " + afr.get_return().getResponse());
+		
+		AddFollower af3 = new AddFollower();
+		Username friend3 = new Username();
+		AddFollowerResponse afr3 = new AddFollowerResponse();
+		friend3.setUsername(usuario3);
+		af3.setArgs0(friend3);
+		afr3 = cs2.addFollower(af3);
+		System.out.println("\t ADDFOLLOWER resultado = " + afr3.get_return().getResponse() + "\n");
 
 		// PRUEBA GETMYFOLLOWERS DE USUARIO 1
 		System.out.println("7. GETMYFOLLOWERS DE USUARIO 1");
@@ -293,16 +354,41 @@ public class UPMGeoCachingClient {
 		gmflr.get_return().getFollowers();
 		if (gmflr.get_return().getResult()) {
 			for (int i = 0; i < gmflr.get_return().getFollowers().length; i++) {
-				System.out.println("\t Follower " + i + " = " + gmflr.get_return().getFollowers()[i] + "\n");
+				System.out.println("\t Follower " + i + " = " + gmflr.get_return().getFollowers()[i]);
 			}
 		}
 		else {
 			System.out.println("\t Fallo en GETMYFOLLOWERS \n");
 			return;
 		}
+		System.out.println();
+		
+		// PRUEBA GETMYFOLLOWERS VACIO
+		System.out.println("7.1. GETMYFOLLOWERS DE USUARIO 2 LISTA VACIA");
+		GetMyFollowers gmf3 = new GetMyFollowers();
+		GetMyFollowersResponse gmflr3 = new GetMyFollowersResponse();
+		// FollowerList fl = new FollowerList();
+		gmflr3 = cs10.getMyFollowers(gmf3);
+		gmflr3.get_return().getFollowers();
+		if (gmflr3.get_return().getResult()) {
+			System.out.println("\t Resultado = "
+					+ gmflr3.get_return().getResult());
+			if (gmflr3.get_return().getFollowers() != null) {
+				for (int i = 0; i < gmflr3.get_return().getFollowers().length; i++) {
+					System.out.println("\t Follower " + i + " = "
+							+ gmflr3.get_return().getFollowers()[i]);
+				}
+			} else
+				System.out.println("\t El usuario no tiene followers \n");
+		} else {
+			System.out.println("\t Resultado = "
+					+ gmflr3.get_return().getResult());
+			System.out.println("\t Fallo en GETMYFOLLOWERS \n");
+			return;
+		}
 		
 		// CREATETREASURE USUARIO 1
-		System.out.println("8. CREATE TREASURE USUARIO 1");
+		System.out.println("8. CREAR TESOROS USUARIO 1");
 		CreateTreasure createTreasure = new CreateTreasure();
 		Treasure tesoro1=new Treasure();
 		tesoro1.setName("tesoro");
@@ -310,21 +396,73 @@ public class UPMGeoCachingClient {
 		tesoro1.setLatitude(-50.25);
 		createTreasure.setArgs0(tesoro1);
 		CreateTreasureResponse ctresponse = cs2.createTreasure(createTreasure);
-		System.out.println("\t Resultado: "+ctresponse.get_return().getResponse() + "\n");
+		System.out.println("\t Resultado: "+ ctresponse.get_return().getResponse());
+		
+		CreateTreasure createTreasure2 = new CreateTreasure();
+		Treasure tesoro2=new Treasure();
+		tesoro2.setName("tesoro2");
+		tesoro2.setAltitude(45.21);
+		tesoro2.setLatitude(36.58);
+		createTreasure2.setArgs0(tesoro2);
+		CreateTreasureResponse ctresponse2 = cs2.createTreasure(createTreasure2);
+		System.out.println("\t Resultado: "+ ctresponse2.get_return().getResponse());
+		
+		CreateTreasure createTreasure3 = new CreateTreasure();
+		Treasure tesoro3=new Treasure();
+		tesoro3.setName("tesoro3");
+		tesoro3.setAltitude(-104.36);
+		tesoro3.setLatitude(-40.12);
+		createTreasure3.setArgs0(tesoro3);
+		CreateTreasureResponse ctresponse3 = cs2.createTreasure(createTreasure3);
+		System.out.println("\t Resultado: "+ ctresponse3.get_return().getResponse() + "\n");
+		
+		// CREATETREASURE USUARIO 2
+		System.out.println("8.1. CREAR TESORO USUARIO 2");
+		CreateTreasure createTreasure4 = new CreateTreasure();
+		Treasure tesoro4 = new Treasure();
+		tesoro4.setName("tesoro4");
+		tesoro4.setAltitude(87.25);
+		tesoro4.setLatitude(-62.14);
+		createTreasure4.setArgs0(tesoro4);
+		CreateTreasureResponse ctresponse4 = cs10
+				.createTreasure(createTreasure4);
+		System.out.println("\t Resultado: "
+				+ ctresponse4.get_return().getResponse());
 		
 		// FIND TREASURE ADMIN
-		System.out.println("9. FIND TREASURE DE ADMIN");
+		System.out.println("9. FIND TREASURE DE ADMIN 3 TESOROS (2 DE USUARIO 1 Y 1 DE USUARIO 2)");
 		FindTreasure findTreasure=new FindTreasure();
 		findTreasure.setArgs0(tesoro1);
 		FindTreasureResponse trfresponse = cs.findTreasure(findTreasure);
 		System.out.println("\t Resultado: "+trfresponse.get_return().getResponse() + "\n");
 		
+		FindTreasure findTreasure2=new FindTreasure();
+		findTreasure2.setArgs0(tesoro2);
+		FindTreasureResponse trfresponse2 = cs.findTreasure(findTreasure2);
+		System.out.println("\t Resultado: "+trfresponse2.get_return().getResponse() + "\n");
+		
+		FindTreasure findTreasure3=new FindTreasure();
+		findTreasure3.setArgs0(tesoro4);
+		FindTreasureResponse trfresponse3 = cs.findTreasure(findTreasure3);
+		System.out.println("\t Resultado: "+trfresponse3.get_return().getResponse() + "\n");
+		
+		// REMOVEUSER DE USUARIO 2 DESDE USUARIO 2
+		System.out.println("9.1. USUARIO 2 ELIMINA USUARIO 2 (TODO SU CONTENIDO SE ELIMINA)");
+		Username username8 = new Username();
+		RemoveUser ruser8 = new RemoveUser();
+		RemoveUserResponse ruserres8 = new RemoveUserResponse();
+		username8.setUsername(usuario2);
+		ruser8.setArgs0(username8);
+		ruserres8 = cs10.removeUser(ruser8);
+		System.out.println("\t Resultado = "
+				+ ruserres8.get_return().getResponse() + "\n");
+		
 		// GET MY TREASURES FOUND ADMIN
-		System.out.println("10. GET MY TREASURES FOUND DE ADMIN");
+		System.out.println("10. GET MY TREASURES FOUND DE ADMIN (EL TESORO DE USUARIO 2 NO APARECE)");
 		GetMyTreasuresFound getMyTreasuresFound=new GetMyTreasuresFound();
 		GetMyTreasuresFoundResponse gmtrf = cs.getMyTreasuresFound(getMyTreasuresFound);
 		System.out.println("\t Resultado: " + gmtrf.get_return().getResult());
-		if (gmtrf.get_return().getNames().length == 0)
+		if (gmtrf.get_return().getNames() == null)
 			System.out
 					.println("\t No existen tesoros encontrados por el usuario \n");
 		else {
@@ -337,13 +475,35 @@ public class UPMGeoCachingClient {
 		}
 		System.out.println("\n");
 		
+		// GET MY TREASURE FOUND USUARIO 1 LISTA VACIA
+		System.out.println("10.1. GET MY TREASURES FOUND DE ADMIN");
+		GetMyTreasuresFound getMyTreasuresFound2=new GetMyTreasuresFound();
+		GetMyTreasuresFoundResponse gmtrf2 = cs2.getMyTreasuresFound(getMyTreasuresFound2);
+		System.out.println("\t Resultado: " + gmtrf2.get_return().getResult());
+		if (gmtrf2.get_return().getNames() == null)
+			System.out
+					.println("\t No existen tesoros encontrados por el usuario \n");
+		else {
+			for (int i = 0; i < gmtrf2.get_return().getAlts().length; i++) {
+				System.out.println("\t Tesoro " + i + " = "
+						+ gmtrf2.get_return().getAlts()[i] + " ,"
+						+ gmtrf2.get_return().getLats()[i] + " ,"
+						+ gmtrf2.get_return().getNames()[i]);
+			}
+		}
+		System.out.println("\n");
+		
 		// GET MY TREASURES CREATED USUARIO 1
 		System.out.println("11. TESOROS CREADOS POR USUARIO1");
 		GetMyTreasuresCreated getMyTreasuresCreated=new GetMyTreasuresCreated();
 		GetMyTreasuresCreatedResponse gmtrc = cs2.getMyTreasuresCreated(getMyTreasuresCreated);
 		System.out.println("\t Resultado: " + gmtrc.get_return().getResult());
 		if (gmtrc.get_return().getResult()) {
-			if (gmtrc.get_return().getAlts().length > 0) {
+			if (gmtrc.get_return().getAlts() != null) {
+				//System.out.println("\t Numero = " + gmtrc.get_return().getAlts().length);
+				double[] al = new double[gmtrc.get_return().getAlts().length];
+				al = gmtrc.get_return().getAlts();
+				//System.out.println(al[0] + " " + al[1] + " " + al[2]);
 				for (int i = 0; i < gmtrc.get_return().getAlts().length; i++) {
 					System.out.println("\t Tesoro " + i + " = "
 							+ gmtrc.get_return().getAlts()[i] + " ,"
@@ -359,7 +519,7 @@ public class UPMGeoCachingClient {
 		AddFollower af2 = new AddFollower();
 		Username friend2 = new Username();
 		AddFollowerResponse afr2 = new AddFollowerResponse();
-		friend2.setUsername(usuario2);
+		friend2.setUsername(usuario1);
 		af2.setArgs0(friend2);
 		afr2 = cs.addFollower(af2);
 		System.out.println("\t ADDFOLLOWER resultado = " + afr2.get_return().getResponse() + "\n");
@@ -367,7 +527,7 @@ public class UPMGeoCachingClient {
 		// GET MY FOLLOWER TREASURES CREATED
 		System.out.println("13. LISTA DE TESOROS CREADOS POR FOLLOWER DE ADMIN (USUARIO1)");
 		Username uuu = new Username();
-		uuu.setUsername(usuario2);
+		uuu.setUsername(usuario1);
 		GetMyFollowerTreasuresCreated getMyFollowerCreated = new GetMyFollowerTreasuresCreated();
 		getMyFollowerCreated.setArgs0(uuu);
 		GetMyFollowerTreasuresCreatedResponse gmftrc = cs
@@ -395,13 +555,13 @@ public class UPMGeoCachingClient {
 		
 		
 		
-		createTreasure.getArgs0().setLatitude(23);
+		/*createTreasure.getArgs0().setLatitude(23);
 		cs2.createTreasure(createTreasure);
 		
 		tesoro1.setName("tesoro2");
 		CreateTreasure createTreasure2 = new CreateTreasure();
 		createTreasure2.setArgs0(tesoro1);
-		cs.createTreasure(createTreasure2);
+		cs.createTreasure(createTreasure2);*/
 		
 		
 		
@@ -424,12 +584,15 @@ public class UPMGeoCachingClient {
 		gmflr = cs2.getMyFollowers(gmf);
 		gmflr.get_return().getFollowers();
 		if (gmflr.get_return().getResult()&&gmflr.get_return().getFollowers()!=null) {
+			System.out.println("\t Resultado = " + gmflr.get_return().getResult());
 			for (int i = 0; i < gmflr.get_return().getFollowers().length; i++) {
 				System.out.println("\t Amigo " + i + " = " + gmflr.get_return().getFollowers()[i]);
 			}
 		}
-		else
-			System.out.println("\t Resultado = " + gmflr.get_return().getResult() + "\n");
+		else {
+			System.out.println("\t Resultado = " + gmflr.get_return().getResult());
+			System.out.println("\t El usuario no tiene followers \n");
+		}
 		
 				
 
@@ -473,6 +636,12 @@ public class UPMGeoCachingClient {
 		System.out.println("20. LOGOUT DE USUARIO 1");
 		Logout logout2 = new Logout();
 		cs2.logout(logout2);
+		System.out.println("\t Logout realizado \n");
+		
+		// LOGOUT DE USUARIO 2
+		System.out.println("21. LOGOUT DE USUARIO 2");
+		Logout logout3 = new Logout();
+		cs10.logout(logout3);
 		System.out.println("\t Logout realizado \n");
 
 	}
